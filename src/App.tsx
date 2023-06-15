@@ -1,13 +1,13 @@
-import Navbar from "./components/Navbar";
-import NotesDisplay from "./components/NotesDisplay";
+import "./App.css";
+import { BrowserRouter } from "react-router-dom";
+import Router from "./pages/router";
 
-function App() {
+const App = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <NotesDisplay />
-    </div>
+    <BrowserRouter>
+      <Router />
+    </BrowserRouter>
   );
-}
+};
 
 export default App;

@@ -11,7 +11,8 @@ import { BiPencil } from "react-icons/bi";
 
 import "../App.css";
 
-import { Note, NotesList } from "../interfaces/Notes";
+import { NotesList } from "../interfaces/NotesInterface";
+import { ItemType } from "../types/NoteType";
 import Gradient from "./Gradient";
 
 // Fake data generator
@@ -22,7 +23,7 @@ const getItems = (count: number, offset = 0) =>
     isEditable: false,
   }));
 
-type ItemType = Note[];
+
 
 const reorder = (
   list: ItemType,
