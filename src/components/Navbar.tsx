@@ -1,4 +1,5 @@
 import { useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Logo from "../assets/logo.png";
 
 import { AuthContext } from '../context/authContext.tsx'
@@ -8,6 +9,9 @@ import { AiOutlinePlus, AiOutlineSearch, AiOutlineBell } from "react-icons/ai";
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext)
+
+  const navigate = useNavigate()
+
 
   return (
     <nav className="w-full bg-black text-white flex h-14 items-center px-4 justify-between">
@@ -48,7 +52,7 @@ const Navbar = () => {
         <div className="text-[0.6rem] bg-green-600 rounded-full w-6 h-6 flex justify-center items-center">
           MK
         </div>
-        <button onClick={logout}>Log Out</button>
+        <button onClick={user ? logout : ()=>navigate('/login')}>{user ? 'Log Out' : 'Login to save progress'}</button>
       </div>
     </nav>
   );

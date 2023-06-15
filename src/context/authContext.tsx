@@ -35,18 +35,19 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
     }
   };
 
-  const login =  async (inputs: { email: string; password: string }) => {
+  const login = async (inputs: { email: string; password: string }) => {
     try {
-        const user = await signInWithEmailAndPassword(
-          auth,
-          inputs.email,
-          inputs.password
-        );
-        console.log(user);
-      } catch (err: any) {
-        console.log(err.message);
-      }
+      const user = await signInWithEmailAndPassword(
+        auth,
+        inputs.email,
+        inputs.password
+      );
+      console.log(user);
+    } catch (err: any) {
+      console.log(err.message);
+    }
   };
+  
 
 
   const logout = async () => {

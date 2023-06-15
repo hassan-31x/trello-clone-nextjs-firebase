@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   DragDropContext,
   Droppable,
@@ -15,6 +15,9 @@ import { INotesList } from "../interfaces/NotesInterface";
 import { ItemType } from "../types/NoteType";
 import Gradient from "./Gradient";
 import { AuthContext } from '../context/authContext.tsx'
+
+import { db } from '../config/firebaseConfig.ts'
+import { collection, doc, getDocs, getDoc, deleteDoc, addDoc } from "firebase/firestore";
 
 
 // Fake data generator
@@ -61,9 +64,77 @@ function NotesDisplay() {
   const [hover, setHover] = useState<string>("");
   const [state, setState] = useState<INotesList[]>([]);
 
+  
+  const { user } = useContext(AuthContext)
+
+  useEffect(() => {
+    const retrieveUserNotes = async (userId) => {
+      try {
+        const userDocRef = doc(db, 'users', userId);
+        const collectionsRef = collection(userDocRef, 'collections');
+        const collectionQuerySnapshot = await getDocs(collectionsRef);
+    
+        const notes = [];
+    
+        for (const collectionDoc of collectionQuerySnapshot.docs) {
+          const notesRef = collection(collectionDoc.ref, 'notes');
+          const notesQuerySnapshot = await getDocs(notesRef);
+    
+          notesQuerySnapshot.forEach((noteDoc) => {
+            const noteData = noteDoc.data();
+            const note = {
+              id: noteData.id,
+              content: noteData.content,
+              isEditable: noteData.isEditable,
+              collectionId: collectionDoc.id, // Optional: Include the collection ID if needed
+              collectionName: collectionDoc.data().name // Optional: Include the collection name if needed
+            };
+    
+            notes.push(note);
+            console.log(notes);
+          });
+        }
+    
+        const result = [];
+        const collectionMap = {};
+
+        notes.forEach(item => {
+          const { collectionId, collectionName, isEditable, ...note } = item;
+          note.isEditable = false
+          const existingCollection = collectionMap[collectionId];
+          
+          if (existingCollection) {
+            existingCollection.notes.push(note);
+          } else {
+            const newCollection = {
+              name: collectionName,
+              isEditable: false,
+              id: collectionId*1,
+              notes: [note]
+            };
+            collectionMap[collectionId] = newCollection;
+            result.push(newCollection);
+          }
+        });
+
+        console.log(result);
+        setState(result)
+        
+        return notes;
+      } catch (error) {
+        console.log('Error retrieving user notes:', error);
+      }
+    };
+    
+    // Usage: Pass the user ID to retrieve the notes
+    if (user) {
+      retrieveUserNotes(`${user.uid}`);
+    }
+  }, [user]);
+    
+
   function onDragEnd(result: DropResult) {
     const { source, destination } = result;
-    console.log(result);
 
     // Dropped outside the list
     if (!destination) {
@@ -77,7 +148,6 @@ function NotesDisplay() {
       const items = reorder(state[sInd].notes, source.index, destination.index);
       let newObject = state[sInd];
       newObject.notes = items;
-      console.log(newObject);
       const tempState = [...state];
       tempState.splice(sInd, 1, newObject);
       setState(tempState);
@@ -122,7 +192,6 @@ function NotesDisplay() {
     newState[mainIndex] = { ...state[mainIndex], notes }; // Update the notes array in the newState
 
     // Use newState as needed (e.g., set it as the new state or perform other operations)
-    console.log(newState);
     setState(newState);
   };
 
@@ -184,8 +253,50 @@ function NotesDisplay() {
     });
     setState(updatedData);
   };
-  const { user } = useContext(AuthContext)
-  console.log(user)
+
+  
+  const deleteUserData = async (userId) => {
+    try {
+      const userDocRef = doc(db, "users", userId);
+      await deleteDoc(userDocRef);
+      console.log("User data deleted successfully.");
+    } catch (error) {
+      console.log("Error deleting user data:", error);
+    }
+  };
+  
+  const saveDataToFirestore = async (userId) => {
+    try {
+      // Delete existing user data
+      await deleteUserData(userId);
+      console.log(state)
+  
+      // Save new data to Firestore
+      const userDocRef = doc(db, 'users', userId);
+      const collectionsRef = collection(userDocRef, 'collections');
+  
+      for (const collectionData of state) {
+        const collectionDocRef = await addDoc(collectionsRef, {
+          name: collectionData.name,
+          isEditable: collectionData.isEditable
+        });
+  
+        const notesRef = collection(collectionDocRef, 'notes');
+  
+        for (const noteData of collectionData.notes) {
+          await addDoc(notesRef, {
+            id: noteData.id,
+            content: noteData.content,
+            isEditable: noteData.isEditable
+          });
+        }
+      }
+  
+      console.log('Data saved successfully');
+    } catch (error) {
+      console.log('Error saving data to Firestore:', error);
+    }
+  };
 
 
   return (
@@ -331,6 +442,7 @@ function NotesDisplay() {
           + Add new list
         </button>
       </div>
+      <button onClick={() => saveDataToFirestore(user?.uid)} className="px-4 py-2 border bg-black text-white rounded-xl hover:text-black hover:border-black hover:bg-blue-400 delay-75 duration-150 ease-out">Save Notes</button>
     </div>
   );
 }

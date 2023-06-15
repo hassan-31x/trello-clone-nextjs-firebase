@@ -1,7 +1,7 @@
 export interface INote {
     id: string;
     content: string;
-    isEditable: boolean;
+    isEditable: boolean; 
 }
   
 export interface INotesList {

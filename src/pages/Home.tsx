@@ -1,4 +1,4 @@
-import NotesDisplay from '../components/NotesDisplay'
+import NotesDisplay from '../components/NotesDisplays'
 import Navbar from '../components/Navbar'
 
 const Home = () => {
