@@ -1,13 +1,11 @@
 import Navbar from "./components/Navbar";
-// import NotesDisplay from "./components/NotesDisplay";
-import QuoteApp from "./components/Test";
+import NotesDisplay from "./components/NotesDisplay";
 
 function App() {
   return (
     <div className="min-h-screen flex flex-col">
-      {/* <NotesDisplay /> */}
       <Navbar />
-      <QuoteApp />
+      <NotesDisplay />
     </div>
   );
 }
