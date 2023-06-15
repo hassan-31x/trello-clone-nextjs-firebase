@@ -1,12 +1,12 @@
-export interface Note {
+export interface INote {
     id: string;
     content: string;
     isEditable: boolean;
 }
   
-export interface NotesList {
+export interface INotesList {
     name: string;
     id: number;
-    notes: Note[],
+    notes: INote[],
     isEditable: boolean;
 }

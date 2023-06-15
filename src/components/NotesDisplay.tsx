@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import {
   DragDropContext,
   Droppable,
@@ -11,9 +11,11 @@ import { BiPencil } from "react-icons/bi";
 
 import "../App.css";
 
-import { NotesList } from "../interfaces/NotesInterface";
+import { INotesList } from "../interfaces/NotesInterface";
 import { ItemType } from "../types/NoteType";
 import Gradient from "./Gradient";
+import { AuthContext } from '../context/authContext.tsx'
+
 
 // Fake data generator
 const getItems = (count: number, offset = 0) =>
@@ -57,7 +59,7 @@ const move = (
 
 function NotesDisplay() {
   const [hover, setHover] = useState<string>("");
-  const [state, setState] = useState<NotesList[]>([]);
+  const [state, setState] = useState<INotesList[]>([]);
 
   function onDragEnd(result: DropResult) {
     const { source, destination } = result;
@@ -103,7 +105,7 @@ function NotesDisplay() {
     setState(newState);
   };
 
-  const addElement = (element: NotesList, index: number) => {
+  const addElement = (element: INotesList, index: number) => {
     const newNotes = [...element.notes, ...getItems(1)];
     element.notes = newNotes;
     const tempState = [...state];
@@ -182,6 +184,9 @@ function NotesDisplay() {
     });
     setState(updatedData);
   };
+  const { user } = useContext(AuthContext)
+  console.log(user)
+
 
   return (
     <div className="w-full grow bg-blue-800 px-2 md:px-10">

@@ -1,3 +1,3 @@
-import { Note } from "../interfaces/NotesInterface";
+import { INote } from "../interfaces/NotesInterface";
 
-export type ItemType = Note[];
+export type ItemType = INote[];
