@@ -23,55 +23,75 @@ const getItems = (count: number, offset = 0) =>
 
 type ItemType = Note[];
 
-const reorder = (list, startIndex, endIndex) => {
+const reorder = (
+  list: ItemType,
+  startIndex: number,
+  endIndex: number
+): ItemType => {
   const result = Array.from(list);
   const [removed] = result.splice(startIndex, 1);
   result.splice(endIndex, 0, removed);
-
   return result;
 };
 
-const move = (source, destination, droppableSource, droppableDestination) => {
+const move = (
+  source: ItemType,
+  destination: ItemType,
+  droppableSource: { droppableId: string; index: number },
+  droppableDestination: { droppableId: string; index: number }
+) => {
   const sourceClone = Array.from(source);
   const destClone = Array.from(destination);
   const [removed] = sourceClone.splice(droppableSource.index, 1);
 
   destClone.splice(droppableDestination.index, 0, removed);
 
-  const result = {};
+  const result: { [key: string]: ItemType } = {};
   result[droppableSource.droppableId] = sourceClone;
   result[droppableDestination.droppableId] = destClone;
 
   return result;
 };
-const grid = 8;
 
 function QuoteApp() {
   const [hover, setHover] = useState<string>("");
   const [state, setState] = useState<NotesList[]>([]);
 
-  function onDragEnd(result) {
+  function onDragEnd(result: DropResult) {
     const { source, destination } = result;
+    console.log(result);
 
-    // dropped outside the list
+    // Dropped outside the list
     if (!destination) {
       return;
     }
+
     const sInd = +source.droppableId;
     const dInd = +destination.droppableId;
 
     if (sInd === dInd) {
-      const items = reorder(state[sInd], source.index, destination.index);
-      const newState = [...state];
-      newState[sInd] = items;
-      setState(newState);
+      const items = reorder(state[sInd].notes, source.index, destination.index);
+      let newObject = state[sInd];
+      newObject.notes = items;
+      console.log(newObject);
+      const tempState = [...state];
+      tempState.splice(sInd, 1, newObject);
+      setState(tempState);
     } else {
-      const result = move(state[sInd], state[dInd], source, destination);
-      const newState = [...state];
-      newState[sInd] = result[sInd];
-      newState[dInd] = result[dInd];
+      const result = move(
+        state[sInd].notes,
+        state[dInd].notes,
+        source,
+        destination
+      );
+      // const newState = [...state];
+      const tempState = [...state];
+      tempState[sInd].notes = result[sInd];
+      tempState[dInd].notes = result[dInd];
+      // newState[sInd] = result[sInd];
+      // newState[dInd] = result[dInd];
 
-      setState(newState.filter(group => group.length));
+      setState(tempState);
     }
   }
 
