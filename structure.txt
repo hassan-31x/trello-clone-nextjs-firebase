@@ -1,0 +1,37 @@
+state = [
+    {
+        name: 'Example Name',
+        isEditable:false
+        id: 01,
+        notes: [
+            {
+                id: '765970'
+                content: 'Example Note'
+                isEditable: false
+            },
+            {
+                id: '34235'
+                content: 'Example Note 2'
+                isEditable: false
+            }
+        ]
+    },
+    {
+        name: 'Example Name 2',
+        isEditable:false
+        id: 01,
+        notes: [
+            {
+                id: '765970'
+                content: 'Example Note'
+                isEditable: false
+            },
+            {
+                id: '34235'
+                content: 'Example Note 2'
+                isEditable: false
+            }
+        ]
+    },
+
+]

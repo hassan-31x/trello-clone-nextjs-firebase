@@ -1,0 +1,18 @@
+state = [
+    [
+        {
+            id: 0,
+            content: 'Example content 1;
+        },
+        {
+            id: 1,
+            content: 'Example content 2;
+        },
+    ],
+    [
+        {
+            id: 1.
+            content: 'Example content another;
+        }
+    ]
+]
