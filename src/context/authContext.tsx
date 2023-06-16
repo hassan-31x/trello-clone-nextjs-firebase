@@ -1,6 +1,8 @@
 import { useState, createContext, ReactNode } from 'react';
 import { auth } from '../config/firebaseConfig';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { db } from '../config/firebaseConfig.ts'
+import { addDoc, collection, doc, setDoc } from 'firebase/firestore'
 // import { auth, provider } from '../config/firebaseConfig';
 // import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithPopup } from 'firebase/auth';
 
@@ -29,7 +31,9 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
         inputs.email,
         inputs.password
       );
-      console.log(user);
+      console.log(user.user.uid);
+
+      await setDoc(doc(db, "users", user.user.uid), {});       
     } catch (err: any) {
       console.log(err.message);
     }
@@ -51,6 +55,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
 
 
   const logout = async () => {
+    window.location.reload()
     await signOut(auth)
   }
 

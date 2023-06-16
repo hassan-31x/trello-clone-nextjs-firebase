@@ -6,7 +6,7 @@ export interface INote {
   
 export interface INotesList {
     name: string;
-    id: number;
+    id: string;
     notes: INote[],
     isEditable: boolean;
 }

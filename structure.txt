@@ -35,3 +35,8 @@ state = [
     },
 
 ]
+
+
+firebse-strucutre = users{COLLECTION} -> users with unique IDS{DOCUMENTS} -> noteContainer(note container collections){COLLECTION} -> noteContainers with unique IDS{DOCUMENT} -> notes{COLLECTION} -> notes with multiple IDs{DOCUMENT}
+
+collection, document, 'collection', document, collection, document 
