@@ -12,7 +12,7 @@ import { BiPencil } from "react-icons/bi";
 
 import "../App.css";
 
-import { INotesList } from "../interfaces/NotesInterface";
+import { INote, INotesList } from "../interfaces/NotesInterface";
 import { ItemType } from "../types/NoteType";
 import Gradient from "./Gradient";
 import { AuthContext } from "../context/authContext.tsx";
@@ -25,7 +25,6 @@ import {
   updateDoc,
   deleteDoc,
   addDoc,
-  setDoc,
 } from "firebase/firestore";
 import Loader from "./Loader.tsx";
 
@@ -37,18 +36,18 @@ function NotesDisplay() {
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    async function getUserNoteContainers(userId) {
+    async function getUserNoteContainers(userId: string) {
       setFetching(true)
       const userDocRef = doc(db, 'users', userId);
       const noteContainerRef = collection(userDocRef, 'noteContainer');
       const noteContainerQuerySnapshot = await getDocs(noteContainerRef);
       
       try {
-        const noteContainers: any = [];
+        const noteContainers: INotesList[] = [];
       
         await Promise.all(noteContainerQuerySnapshot.docs.map(async (noteContainerDoc) => {
           const noteContainerData = noteContainerDoc.data();
-          const noteContainer = {
+          const noteContainer: INotesList = {
             name: noteContainerData.name,
             isEditable: noteContainerData.isEditable,
             id: noteContainerDoc.id.toString(),
@@ -60,7 +59,7 @@ function NotesDisplay() {
       
           notesQuerySnapshot.forEach((noteDoc) => {
             const noteData = noteDoc.data();
-            const note = {
+            const note: INote = {
               id: noteDoc.id,
               content: noteData.content,
               isEditable: noteData.isEditable
@@ -107,42 +106,43 @@ function NotesDisplay() {
   };
   console.log(state)
   
-  const updateDrag = async (source, destination, removed) => {
+  const updateDrag = async (source: { index: number; droppableId: string }, destination: { index: number; droppableId: string }, removed: INote) => {
     if (user) {
       try {
         // toast.promise
-        toast.loading('Moving...', {duration: 2000})
+        toast.loading('Moving...', { duration: 2000 });
         const { content, isEditable } = removed;
         const userDocRef = doc(db, 'users', user?.uid);
-        const noteContainerRef = doc(
+        const noteContainerRef: any = doc(
           userDocRef,
           'noteContainer',
-          state[destination.droppableId * 1].id
+          state[parseInt(destination.droppableId)].id
         );
         const newNoteRef = await addDoc(collection(noteContainerRef, 'notes'), {
           content,
           isEditable,
         });
   
-        const anotherNoteContainerRef = doc(
+        const anotherNoteContainerRef: any = doc(
           userDocRef,
           'noteContainer',
-          state[source.droppableId * 1].id
+          state[parseInt(source.droppableId)].id
         );
         const noteRef = doc(
           collection(anotherNoteContainerRef, 'notes'),
-          state[source.droppableId * 1].notes[source.index].id
+          state[parseInt(source.droppableId)].notes[source.index].id
         );
   
         await deleteDoc(noteRef);
-        
-        toast.success('Note moved successfully')
+  
+        toast.success('Note moved successfully');
         return newNoteRef.id;
       } catch (error) {
         console.log('Error deleting note:', error);
       }
     }
   };
+  
 
   const move = (
     source: ItemType,
@@ -189,14 +189,14 @@ function NotesDisplay() {
             source,
             destination
           );
-    
+            console.log(source, destination, removed)
           const newId = await updateDrag(source, destination, removed);
     
-          const tempState = [...state];
+          const tempState: any = [...state];
           tempState[sInd].notes = result[sInd];
           tempState[dInd].notes = result[dInd];
     
-          const updatedNotes = tempState[dInd].notes.map((note) => {
+          const updatedNotes = tempState[dInd].notes.map((note: INote) => {
             if (note.id === removed.id) {
               return {
                 ...note,
@@ -216,20 +216,23 @@ function NotesDisplay() {
   };
   
   const addNoteContainer = async () => {
-    const noteContainerData = {
-      name: `Untitled ${state.length + 1}`,
-      isEditable: false,
-    };
-    const userDocRef = doc(db, "users", user?.uid);
-    const noteContainerRef = await addDoc(
-      collection(userDocRef, "noteContainer"),
-      noteContainerData
-    );
+    let noteContainerRef
+    if (user ) {
+      const noteContainerData = {
+        name: `Untitled ${state.length + 1}`,
+        isEditable: false,
+      };
+      const userDocRef = doc(db, "users", user?.uid);
+      noteContainerRef = await addDoc(
+        collection(userDocRef, "noteContainer"),
+        noteContainerData
+        );
+    }
 
     setState([
       ...state,
       {
-        id: user ? noteContainerRef.id : "",
+        id: noteContainerRef ? noteContainerRef.id : "",
         name: `Untitled ${state.length + 1}`,
         notes: [],
         isEditable: false,
@@ -261,7 +264,7 @@ function NotesDisplay() {
     toast.success("Note list deleted")
   };
 
-  const addElement = async (container: INotesList, index: number) => {
+  const addElement = async (container: any, index: number) => {
     let newNoteRef;
     if (user) {
       try {
@@ -276,12 +279,8 @@ function NotesDisplay() {
         newNoteRef = await addDoc(collection(noteContainerRef, 'notes'), noteData);
   
         await toast.promise(
-          new Promise<void>((resolve, reject) => {
-
+          new Promise<void>((resolve) => {
             resolve();
-            
-            // Reject the promise when there is an error
-            // reject(new Error('Error message'));
           }),
           {
             loading: 'Loading',
@@ -301,7 +300,7 @@ function NotesDisplay() {
         {
           content: 'Tap to Edit',
           isEditable: false,
-          id: user ? newNoteRef.id : Date.now().toString(),
+          id: user ? newNoteRef?.id : Date.now().toString(),
         },
       ],
     ];
@@ -344,7 +343,7 @@ function NotesDisplay() {
 
   const handleNameChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    objectId: number
+    objectId: string
   ) => {
     const updatedData = state.map((object) => {
       if (object.id === objectId) {
@@ -356,18 +355,25 @@ function NotesDisplay() {
   };
 
   const editName = async (containerId: string) => {
-    const noteContainerRef = doc(
-      db,
-      "users",
-      user?.uid,
-      "noteContainer",
-      containerId
-    );
-    const newName = { name: state.find((obj) => obj.id === containerId).name };
-    await updateDoc(noteContainerRef, newName);
+    if (user) {
+      const noteContainerRef = doc(
+        db,
+        "users",
+        user.uid,
+        "noteContainer",
+        containerId
+        );
+        
+        const container = state.find((obj) => obj.id === containerId);
+        if (container) {
+          const newName = { name: container.name };
+          await updateDoc(noteContainerRef, newName);
+        }
+    }
   };
+  
 
-  const toggleEditMode = async (containerId: number) => {
+  const toggleEditMode = async (containerId: string) => {
     const updatedData = state.map((object) => {
       if (object.id === containerId) {
         return { ...object, isEditable: !object.isEditable };
@@ -381,7 +387,7 @@ function NotesDisplay() {
 
   const handleContentChangeItem = (
     e: React.ChangeEvent<HTMLInputElement>,
-    objectId: number,
+    objectId: string,
     noteId: string
   ) => {
     const updatedData = state.map((object) => {
@@ -400,24 +406,30 @@ function NotesDisplay() {
   };
 
   const editContent = async (containerId: string, noteId: string) => {
-    const noteRef = doc(
-      db,
-      "users",
-      user?.uid,
-      "noteContainer",
-      containerId,
-      "notes",
-      noteId
-    );
-    const newContent = {
-      content: state
-        .find((obj) => obj.id === containerId)
-        .notes.find((nt) => nt.id === noteId).content,
-    };
-    await updateDoc(noteRef, newContent);
+    if (user) {
+      const noteRef = doc(
+        db,
+        "users",
+        user.uid,
+        "noteContainer",
+        containerId,
+        "notes",
+        noteId
+        );
+        const container = state.find((obj) => obj.id === containerId);
+        if (container) {
+          const note = container.notes.find((nt) => nt.id === noteId);
+          if (note) {
+            const newContent = {
+              content: note.content,
+            };
+            await updateDoc(noteRef, newContent);
+          }
+        }
+    }
   };
 
-  const toggleEditModeItem = (objectId: number, noteId: string) => {
+  const toggleEditModeItem = (objectId: string, noteId: string) => {
     const updatedData = state.map((object) => {
       if (object.id === objectId) {
         const updatedNotes = object.notes.map((note) => {

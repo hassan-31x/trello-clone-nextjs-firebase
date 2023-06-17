@@ -25,10 +25,13 @@ const Login = (): JSX.Element => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    buttonRef.current.disabled = true;
-
+  
+    if (buttonRef.current) {
+      buttonRef.current.disabled = true;
+    }
+  
     const res = await login(inputs);
-
+  
     if (res === 'Done') {
       setError(null);
       navigate('/');
@@ -38,14 +41,16 @@ const Login = (): JSX.Element => {
       const extractedText = match ? match[1] : null;
       setError(extractedText);
     }
-
-    buttonRef.current.disabled = false;
+  
+    if (buttonRef.current) {
+      buttonRef.current.disabled = false;
+    }
   };
 
   return (
     <div className='flex items-center justify-center h-screen bg-blue-300 flex-col'>
       <h1 className='text-5xl text mb-6'>Login</h1>
-      <form className='flex flex-col p-12 bg-white gap-5 w-96 rounded-lg' onSubmit={handleSubmit}>
+      <form className='flex flex-col p-12 bg-white gap-5 w-96 rounded-lg max-w-[90vw]' onSubmit={handleSubmit}>
         <input
           type='text'
           placeholder='email'

@@ -48,7 +48,7 @@ const Register = (): JSX.Element => {
   return (
     <div className='flex items-center justify-center h-screen bg-blue-300 flex-col'>
       <h1 className='text-5xl text-black mb-6'>Register</h1>
-      <form className='flex flex-col p-12 bg-white gap-5 w-96 rounded-lg' onSubmit={handleSubmit}>
+      <form className='flex flex-col p-12 bg-white gap-5 w-96 rounded-lg max-w-[90vw]' onSubmit={handleSubmit}>
         <input
           type='email'
           placeholder='email'

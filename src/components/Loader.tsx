@@ -34,7 +34,7 @@ const Loader: React.FC = () => {
 
           <div className="w-[30%] h-2 mb-2 rounded-md skeleton opacity-70 ml-2" />
 
-          {el.content.map((el2, index) => (
+          {el.content.map((_, index) => ( // Removed `el2` from arguments
             <div className="rounded-xl my-2 flex items-center px-3 py-2 bg-[#F1F2F4] note" key={index}>
               <div
                 className="skeleton h-[0.9rem] mb-1 rounded-md opacity-70 ml-3"

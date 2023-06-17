@@ -9,4 +9,4 @@ export interface INotesList {
     id: string;
     notes: INote[],
     isEditable: boolean;
-}
+} 
