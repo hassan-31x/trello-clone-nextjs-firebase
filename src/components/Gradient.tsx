@@ -1,9 +1,8 @@
 import '../App.css'
+
 const Gradient = () => {
   return (
-    <div className="w-full h-14 glassmorphism">
-        he
-    </div>
+    <div className="h-14 glassmorphism mx-auto w-full" />
   )
 }
 

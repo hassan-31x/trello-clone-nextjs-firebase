@@ -4,12 +4,29 @@ body {
   font-family: Poppins;
 }
 
+.bg {
+  background: url('./assets/bg.avif');
+}
+
 .glassmorphism {
-  background: rgba( 6, 6, 6, 0.45 );
-  backdrop-filter: blur( 6px );
-  -webkit-backdrop-filter: blur( 6px );
+  background: rgba(6, 6, 6, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .note {
   box-shadow: rgba(99, 99, 99, 0.4) -1px 2px 3px 0px;
+}
+
+.skeleton {
+  animation: skeleton-loading 0.8s linear infinite alternate
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-color: hsl(200, 20%, 70%);
+  }
+  100% {
+    background-color: hsl(200, 20%, 95%);
+  }
 }

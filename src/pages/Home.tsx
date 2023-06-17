@@ -1,13 +1,15 @@
-import NotesDisplay from '../components/NotesDisplays'
-import Navbar from '../components/Navbar'
+import React from 'react';
 
-const Home = () => {
+import Navbar from '../components/Navbar';
+import NotesDisplay from '../components/NotesDisplays';
+
+const Home: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col w-screen max-w-full">
       <Navbar />
       <NotesDisplay />
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

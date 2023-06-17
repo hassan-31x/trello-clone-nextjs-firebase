@@ -1,63 +1,51 @@
-import { useState, createContext, ReactNode } from 'react';
+import React, { useState, createContext, ReactNode } from 'react';
 import { auth } from '../config/firebaseConfig';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
-import { db } from '../config/firebaseConfig.ts'
-import { addDoc, collection, doc, setDoc } from 'firebase/firestore'
-// import { auth, provider } from '../config/firebaseConfig';
-// import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithPopup } from 'firebase/auth';
+import { db } from '../config/firebaseConfig';
+import { doc, setDoc } from 'firebase/firestore';
+import { User, AuthContextValue } from '../interfaces/ContextsInterface';
 
-interface AuthContextValue {
-  register: (inputs: { email: string; password: string }) => Promise<void>;
-  login: (inputs: { email: string; password: string }) => Promise<void>;
-}
-
-export const AuthContext = createContext();
+export const AuthContext = createContext<AuthContextValue>({
+  user: null,
+  register: async () => '',
+  login: async () => '',
+  logout: async () => {},
+});
 
 interface AuthContextProviderProps {
   children: ReactNode;
 }
 
-export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
-    const [user, setUser] = useState({})
+export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
 
-    onAuthStateChanged(auth, (currentUser) => {
-        setUser(currentUser)
-    })
+  onAuthStateChanged(auth, (currentUser) => {
+    setUser(currentUser);
+  });
 
-  const register = async (inputs: { email: string; password: string }) => {
+  const register = async (inputs: { email: string; password: string }): Promise<string> => {
     try {
-      const user = await createUserWithEmailAndPassword(
-        auth,
-        inputs.email,
-        inputs.password
-      );
-      console.log(user.user.uid);
-
-      await setDoc(doc(db, "users", user.user.uid), {});       
+      const newUser = await createUserWithEmailAndPassword(auth, inputs.email, inputs.password);
+      await setDoc(doc(db, 'users', newUser.user.uid), {});
+      return 'Success';
     } catch (err: any) {
-      console.log(err.message);
+      return err.message;
     }
   };
 
-  const login = async (inputs: { email: string; password: string }) => {
+  const login = async (inputs: { email: string; password: string }): Promise<string> => {
     try {
-      const user = await signInWithEmailAndPassword(
-        auth,
-        inputs.email,
-        inputs.password
-      );
-      console.log(user);
+      await signInWithEmailAndPassword(auth, inputs.email, inputs.password);
+      return 'Success';
     } catch (err: any) {
-      console.log(err.message);
+      return err.message;
     }
   };
-  
 
-
-  const logout = async () => {
-    window.location.reload()
-    await signOut(auth)
-  }
+  const logout = async (): Promise<void> => {
+    window.location.reload();
+    await signOut(auth);
+  };
 
   return (
     <AuthContext.Provider value={{ user, register, login, logout }}>
