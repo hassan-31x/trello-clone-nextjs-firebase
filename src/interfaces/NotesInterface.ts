@@ -2,6 +2,7 @@ export interface INote {
     id: string;
     content: string;
     isEditable: boolean; 
+    index: number
 }
   
 export interface INotesList {
@@ -9,4 +10,5 @@ export interface INotesList {
     id: string;
     notes: INote[],
     isEditable: boolean;
+    index: number
 } 

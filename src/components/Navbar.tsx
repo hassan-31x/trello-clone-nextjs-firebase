@@ -35,6 +35,7 @@ const Navbar: React.FC = () => {
           >
             <AiOutlinePlus />
           </IconContext.Provider>
+
         </div>
       </div>
 
@@ -49,8 +50,11 @@ const Navbar: React.FC = () => {
         <div className="text-[0.6rem] bg-green-600 rounded-full w-6 h-6 flex justify-center items-center">
           {user?.email.slice(0, 2).toUpperCase() || 'MK'}
         </div>
-        <button onClick={user ? logout : () => navigate('/login')}>
+        <button onClick={user ? logout : () => navigate('/login')} className='hidden md:block'>
           {user ? 'Log Out' : 'Login to save progress'}
+        </button>
+        <button onClick={user ? logout : () => navigate('/login')} className='block md:hidden'>
+          {user ? 'Log Out' : 'Login'}
         </button>
       </div>
     </nav>
