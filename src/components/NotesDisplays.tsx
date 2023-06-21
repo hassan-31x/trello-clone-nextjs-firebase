@@ -46,6 +46,7 @@ function NotesDisplay() {
         const noteContainers: INotesList[] = [];
 
         noteContainerQuerySnapshot.docs.map((noteContainerDoc) => {
+          let firstTime = true
           const noteContainerData = noteContainerDoc.data();
           console.log('fething container')
           const noteContainer: INotesList = {
@@ -58,11 +59,13 @@ function NotesDisplay() {
 
           try {
             const unsub2 = onSnapshot(collection(noteContainerDoc.ref, "notes"), (notesQuerySnapshot) => {
-              console.log(notesQuerySnapshot)
+              // console.log(notesQuerySnapshot.docs[notesQuerySnapshot.docs.length-1].id)
+              console.log(noteContainer)
               noteContainer.notes = [];
               // console.log(noteContainerDoc)
               notesQuerySnapshot.docs.map((noteDoc) => {
                 const noteData = noteDoc.data();
+                console.log(noteData)
                 console.log('fetching note', state)
                 const note: INote = {
                   id: noteDoc.id,
@@ -72,6 +75,10 @@ function NotesDisplay() {
                 };
                 noteContainer.notes.push(note);
               });
+              // if (firstTime) {
+              //   let tempState = [...state]
+              //   tempState[tempState.findIndex(obj => obj.id === noteContainer.id)] = noteContainer;
+              // }
             });
           }  catch (err) {console.log(err);}
           noteContainers.push(noteContainer);
@@ -504,7 +511,7 @@ function NotesDisplay() {
             error: "Error while creating note",
           }
         );
-        getUserNoteContainers(user.uid)
+        // getUserNoteContainers(user.uid)
       } catch (error) {
         console.error("Error:", error);
         toast.error("Error while creating note");
