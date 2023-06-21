@@ -1,7 +1,7 @@
 import React from 'react';
 
 import Navbar from '../components/Navbar';
-import NotesDisplay from '../components/NotesDisplas';
+import NotesDisplay from '../components/NotesDisplays';
 
 const Home: React.FC = () => {
   return (

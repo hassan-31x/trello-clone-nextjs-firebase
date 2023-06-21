@@ -26,6 +26,7 @@ import {
   updateDoc,
   deleteDoc,
   addDoc,
+  onSnapshot,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -38,45 +39,43 @@ function NotesDisplay() {
 
   const { user } = useContext(AuthContext);
 
-  useEffect(() => {
-    async function getUserNoteContainers(userId: string) {
-      setFetching(true);
-      const userDocRef = doc(db, "users", userId);
-      const noteContainerRef = collection(userDocRef, "noteContainer");
-      const noteContainerQuerySnapshot = await getDocs(noteContainerRef);
-
+  const getUserNoteContainers = (userId: string) => {
+    // setFetching(true);
+    const unsub = onSnapshot(collection(doc(db, "users", userId), "noteContainer"), (noteContainerQuerySnapshot) => {
       try {
         const noteContainers: INotesList[] = [];
 
-        await Promise.all(
-          noteContainerQuerySnapshot.docs.map(async (noteContainerDoc) => {
-            const noteContainerData = noteContainerDoc.data();
-            const noteContainer: INotesList = {
-              id: noteContainerDoc.id.toString(),
-              name: noteContainerData.name,
-              notes: [],
-              isEditable: noteContainerData.isEditable,
-              index: noteContainerData.index,
-            };
+        noteContainerQuerySnapshot.docs.map((noteContainerDoc) => {
+          const noteContainerData = noteContainerDoc.data();
+          console.log('fething container')
+          const noteContainer: INotesList = {
+            id: noteContainerDoc.id.toString(),
+            name: noteContainerData.name,
+            notes: [],
+            isEditable: noteContainerData.isEditable,
+            index: noteContainerData.index,
+          };
 
-            const notesRef = collection(noteContainerDoc.ref, "notes");
-            const notesQuerySnapshot = await getDocs(notesRef);
-
-            notesQuerySnapshot.forEach((noteDoc) => {
-              const noteData = noteDoc.data();
-              const note: INote = {
-                id: noteDoc.id,
-                content: noteData.content,
-                isEditable: noteData.isEditable,
-                index: noteData.index,
-              };
-
-              noteContainer.notes.push(note);
+          try {
+            const unsub2 = onSnapshot(collection(noteContainerDoc.ref, "notes"), (notesQuerySnapshot) => {
+              console.log(notesQuerySnapshot)
+              noteContainer.notes = [];
+              // console.log(noteContainerDoc)
+              notesQuerySnapshot.docs.map((noteDoc) => {
+                const noteData = noteDoc.data();
+                console.log('fetching note', state)
+                const note: INote = {
+                  id: noteDoc.id,
+                  content: noteData.content,
+                  isEditable: noteData.isEditable,
+                  index: noteData.index,
+                };
+                noteContainer.notes.push(note);
+              });
             });
-
-            noteContainers.push(noteContainer);
-          })
-        );
+          }  catch (err) {console.log(err);}
+          noteContainers.push(noteContainer);
+        });
 
         // Sort noteContainers based on the index
         noteContainers.sort((a, b) => a.index - b.index);
@@ -86,33 +85,130 @@ function NotesDisplay() {
           container.notes.sort((a, b) => a.index - b.index);
         });
 
-        setFetching(false);
         setTimeout(() => {
-          setState(noteContainers);
-        }, 200);
+          // setFetching(false);
+          setTimeout(() => {
+            setState(noteContainers);
+          }, 200);
+        }, 1000);
         console.log(noteContainers);
+        console.log(state)
       } catch (err) {
         console.log(err);
       }
-    }
+    });
+  };
+  useEffect(() => {
+    
 
+    // const getUserNoteContainers = (userId: string) => {
+    //   // setFetching(true);
+    //   const userDocRef = doc(db, "users", userId);
+    //   const noteContainerRef = collection(userDocRef, "noteContainer");
+    //   onSnapshot(noteContainerRef, (noteContainerQuerySnapshot) => {
+    //     try {
+    //       const noteContainers: INotesList[] = [];
+
+    //       noteContainerQuerySnapshot.docs.map((noteContainerDoc) => {
+    //         const noteContainerData = noteContainerDoc.data();
+    //         const noteContainer: INotesList = {
+    //           id: noteContainerDoc.id.toString(),
+    //           name: noteContainerData.name,
+    //           notes: [],
+    //           isEditable: noteContainerData.isEditable,
+    //           index: noteContainerData.index,
+    //         };
+
+    //         const notesRef = collection(noteContainerDoc.ref, "notes");
+    //         onSnapshot(notesRef, (notesQuerySnapshot) => {
+    //           notesQuerySnapshot.docs.forEach((noteDoc) => {
+    //             const noteData = noteDoc.data();
+    //             const note: INote = {
+    //               id: noteDoc.id,
+    //               content: noteData.content,
+    //               isEditable: noteData.isEditable,
+    //               index: noteData.index,
+    //             };
+
+    //             noteContainer.notes.push(note);
+    //           });
+    //         });
+    //         // const notesUnsubscribe = onSnapshot(notesRef, (notesSnapshot) => {
+    //         //   noteContainer.notes = [];
+      
+    //         //   notesSnapshot.forEach((noteDoc) => {
+    //         //     const noteData = noteDoc.data();
+    //         //     const note: INote = {
+    //         //       id: noteDoc.id,
+    //         //       content: noteData.content,
+    //         //       isEditable: noteData.isEditable,
+    //         //       index: noteData.index,
+    //         //     };
+      
+    //         //     noteContainer.notes.push(note);
+    //         //   });
+    //         noteContainers.push(noteContainer);
+    //       });
+
+    //       // Sort noteContainers based on the index
+    //       noteContainers.sort((a, b) => a.index - b.index);
+
+    //       // Sort notes array inside each container based on the index
+    //       noteContainers.forEach((container) => {
+    //         container.notes.sort((a, b) => a.index - b.index);
+    //       });
+
+    //       // setFetching(false);
+    //       // setTimeout(() => {
+    //       setState(noteContainers);
+    //       // }, 200);
+    //       console.log(noteContainers, state);
+
+    //       // Clean up the snapshot listener for notes when the noteContainer is removed
+    //       // const containerUnsubscribe = onSnapshot(
+    //       //   noteContainerDoc.ref,
+    //       //   (containerSnapshot) => {
+    //       //     if (!containerSnapshot.exists()) {
+    //       //       // Remove the noteContainer from the noteContainers array
+    //       //       const containerIndex = noteContainers.findIndex(
+    //       //         (container) => container.id === noteContainer.id
+    //       //       );
+    //       //       if (containerIndex !== -1) {
+    //       //         noteContainers.splice(containerIndex, 1);
+    //       //         setState(noteContainers);
+    //       //       }
+    //       //       containerUnsubscribe(); // Stop listening to changes for this noteContainer
+    //       //       notesUnsubscribe(); // Stop listening to changes for the notes inside this noteContainer
+    //       //     }
+    //       //   }
+    //       // );
+    //     } catch (err) {
+    //       console.log(err);
+    //     }
+    //   });
+    // };
+    
+    let unsubscribe
+    console.log(user)
     if (user) {
-      getUserNoteContainers(`${user.uid}`).catch((error) => {
-        console.error("Error fetching note containers:", error);
-      });
+      // console.log('user') 
+      // getUserNoteContainers(`${user.uid}`)
+      unsubscribe = getUserNoteContainers(`${user.uid}`);
+      } else {
+        console.log('no user')
     }
 
-    // Cleanup function
-    return () => {
-      // Example: Cancel any ongoing fetch requests
-      // AbortController is used to cancel the request
-      const controller = new AbortController();
-      const signal = controller.signal;
+    // return () => {
+    //   unsubscribe()
+    // }
 
-      // Cancel the ongoing request
-      controller.abort();
-    };
   }, [user]);
+
+  useEffect(() => {
+    console.log(state)
+  }, [state])
+  
+  
 
   const updateIds = async (
     containerIndex: number,
@@ -170,7 +266,6 @@ function NotesDisplay() {
     result.splice(endIndex, 0, removed);
     return result;
   };
-  console.log(state);
 
   const updateDrag = async (
     source: { index: number; droppableId: string },
@@ -342,16 +437,16 @@ function NotesDisplay() {
       );
     }
 
-    setState([
-      ...state,
-      {
-        id: noteContainerRef ? noteContainerRef.id : "",
-        name: `Untitled ${state.length + 1}`,
-        notes: [],
-        isEditable: false,
-        index: state.length ? state[state.length - 1].index + 1 : 0,
-      },
-    ]);
+    // setState([
+    //   ...state,
+    //   {
+    //     id: noteContainerRef ? noteContainerRef.id : "",
+    //     name: `Untitled ${state.length + 1}`,
+    //     notes: [],
+    //     isEditable: false,
+    //     index: state.length ? state[state.length - 1].index + 1 : 0,
+    //   },
+    // ]);
     toast.success("Note list created");
   };
 
@@ -371,14 +466,15 @@ function NotesDisplay() {
       }
     }
 
-    const newState = [...state];
-    newState.splice(index, 1);
-    setState(newState);
+    // const newState = [...state];
+    // newState.splice(index, 1);
+    // setState(newState);
 
     toast.success("Note list deleted");
   };
 
   const addElement = async (container: any, index: number) => {
+    console.log('adding')
     let newNoteRef;
     if (user) {
       try {
@@ -408,29 +504,30 @@ function NotesDisplay() {
             error: "Error while creating note",
           }
         );
+        getUserNoteContainers(user.uid)
       } catch (error) {
         console.error("Error:", error);
         toast.error("Error while creating note");
       }
     }
 
-    const newNotes = [
-      ...container.notes,
-      ...[
-        {
-          content: "Tap to Edit",
-          isEditable: false,
-          id: user ? newNoteRef?.id : Date.now().toString(),
-          index: container.notes.length
-            ? container.notes[container.notes.length - 1].index + 1
-            : 0,
-        },
-      ],
-    ];
-    container.notes = newNotes;
-    const tempState = [...state];
-    tempState.splice(index, 1, container);
-    setState(tempState);
+    // const newNotes = [
+    //   ...container.notes,
+    //   ...[
+    //     {
+    //       content: "Tap to Edit",
+    //       isEditable: false,
+    //       id: user ? newNoteRef?.id : Date.now().toString(),
+    //       index: container.notes.length
+    //         ? container.notes[container.notes.length - 1].index + 1
+    //         : 0,
+    //     },
+    //   ],
+    // ];
+    // container.notes = newNotes;
+    // const tempState = [...state];
+    // tempState.splice(index, 1, container);
+    // setState(tempState);
   };
 
   const deleteElement = async (mainIndex: number, subIndex: number) => {
@@ -453,12 +550,12 @@ function NotesDisplay() {
       }
     }
 
-    const newState = [...state]; // Create a copy of the state array
-    const notes = [...state[mainIndex].notes]; // Create a copy of the notes array within the specified mainIndex
-    notes.splice(subIndex, 1); // Remove the element at the specified subIndex
-    newState[mainIndex] = { ...state[mainIndex], notes }; // Update the notes array in the newState
-    // Use newState as needed (e.g., set it as the new state or perform other operations)
-    setState(newState);
+    // const newState = [...state]; // Create a copy of the state array
+    // const notes = [...state[mainIndex].notes]; // Create a copy of the notes array within the specified mainIndex
+    // notes.splice(subIndex, 1); // Remove the element at the specified subIndex
+    // newState[mainIndex] = { ...state[mainIndex], notes }; // Update the notes array in the newState
+    // // Use newState as needed (e.g., set it as the new state or perform other operations)
+    // setState(newState);
 
     toast.success("Note Deleted");
   };
@@ -688,7 +785,7 @@ function NotesDisplay() {
                       <Draggable
                         key={item.id}
                         draggableId={item.id}
-                        index={index}
+                        index={index} 
                       >
                         {(provided, snapshot) => (
                           <div
