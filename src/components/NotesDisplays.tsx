@@ -75,10 +75,11 @@ function NotesDisplay() {
                 };
                 noteContainer.notes.push(note);
               });
-              // if (firstTime) {
-              //   let tempState = [...state]
-              //   tempState[tempState.findIndex(obj => obj.id === noteContainer.id)] = noteContainer;
-              // }
+              if (state.length) {
+                let tempState = [...state]
+                tempState[tempState.findIndex(obj => obj.id === noteContainer.id)] = noteContainer;
+                setState(tempState)
+              }
             });
           }  catch (err) {console.log(err);}
           noteContainers.push(noteContainer);
@@ -518,25 +519,27 @@ function NotesDisplay() {
       }
     }
 
-    // const newNotes = [
-    //   ...container.notes,
-    //   ...[
-    //     {
-    //       content: "Tap to Edit",
-    //       isEditable: false,
-    //       id: user ? newNoteRef?.id : Date.now().toString(),
-    //       index: container.notes.length
-    //         ? container.notes[container.notes.length - 1].index + 1
-    //         : 0,
-    //     },
-    //   ],
-    // ];
-    // container.notes = newNotes;
-    // const tempState = [...state];
-    // tempState.splice(index, 1, container);
-    // setState(tempState);
+    if (!container.notes.length) {
+      console.log('running')
+      const newNotes = [
+        ...[
+          {
+            content: "Tap to Edit",
+          isEditable: false,
+          id: user ? newNoteRef?.id : Date.now().toString(),
+          index: container.notes.length
+          ? container.notes[container.notes.length - 1].index + 1
+          : 0,
+        },
+      ],
+    ];
+    container.notes = newNotes;
+    const tempState = [...state];
+    tempState.splice(index, 1, container);
+    setState(tempState);
+  }
   };
-
+  
   const deleteElement = async (mainIndex: number, subIndex: number) => {
     if (user) {
       try {
