@@ -1,15 +1,6 @@
 import { useState, useEffect, useContext } from "react";
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
-} from "react-beautiful-dnd";
-import toast, { Toaster } from "react-hot-toast";
-import { MdDeleteOutline } from "react-icons/md";
-import { AiFillDelete, AiOutlinePlus } from "react-icons/ai";
-import { BiPencil } from "react-icons/bi";
-import { BsImages } from "react-icons/bs";
+import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import toast from "react-hot-toast";
 
 import "../App.css";
 
@@ -22,7 +13,6 @@ import { db, storage } from "../config/firebaseConfig.ts";
 import {
   collection,
   doc,
-  getDocs,
   updateDoc,
   deleteDoc,
   addDoc,
@@ -31,10 +21,11 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 import Loader from "./Loader.tsx";
+import NoteCard from "./NoteCard.tsx";
 
 function NotesDisplay() {
   const [fetching, setFetching] = useState(false);
-  const [hover, setHover] = useState<string>("");
+  // const [hover, setHover] = useState<string>("");
   const [state, setState] = useState<INotesList[]>([]);
 
   const { user } = useContext(AuthContext);
@@ -519,55 +510,26 @@ function NotesDisplay() {
       }
     }
 
-    if (!container.notes.length) {
-      console.log('running')
-      const newNotes = [
-        ...[
-          {
-            content: "Tap to Edit",
-          isEditable: false,
-          id: user ? newNoteRef?.id : Date.now().toString(),
-          index: container.notes.length
-          ? container.notes[container.notes.length - 1].index + 1
-          : 0,
-        },
-      ],
-    ];
-    container.notes = newNotes;
-    const tempState = [...state];
-    tempState.splice(index, 1, container);
-    setState(tempState);
-  }
-  };
-  
-  const deleteElement = async (mainIndex: number, subIndex: number) => {
-    if (user) {
-      try {
-        const userDocRef = doc(db, "users", user.uid);
-        const noteContainerRef = doc(
-          userDocRef,
-          "noteContainer",
-          state[mainIndex].id
-        );
-        const noteRef = doc(
-          collection(noteContainerRef, "notes"),
-          state[mainIndex].notes[subIndex].id
-        );
-
-        await deleteDoc(noteRef);
-      } catch (error) {
-        console.error("Error deleting note:", error);
-      }
-    }
-
-    // const newState = [...state]; // Create a copy of the state array
-    // const notes = [...state[mainIndex].notes]; // Create a copy of the notes array within the specified mainIndex
-    // notes.splice(subIndex, 1); // Remove the element at the specified subIndex
-    // newState[mainIndex] = { ...state[mainIndex], notes }; // Update the notes array in the newState
-    // // Use newState as needed (e.g., set it as the new state or perform other operations)
-    // setState(newState);
-
-    toast.success("Note Deleted");
+    // console.log(!container.notes.length)
+  //   if (container.notes.length) {
+  //     console.log('running')
+  //     const newNotes = [
+  //       ...[
+  //         {
+  //           content: "Tap to Edit",
+  //         isEditable: false,
+  //         id: user ? newNoteRef?.id : Date.now().toString(),
+  //         index: container.notes.length
+  //         ? container.notes[container.notes.length - 1].index + 1
+  //         : 0,
+  //       },
+  //     ],
+  //   ];
+  //   container.notes = newNotes;
+  //   const tempState = [...state];
+  //   tempState.splice(index, 1, container);
+  //   setState(tempState);
+  // }
   };
 
   const handleNameChange = (
@@ -612,69 +574,7 @@ function NotesDisplay() {
 
     editName(containerId);
   };
-
-  const handleContentChangeItem = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    objectId: string,
-    noteId: string
-  ) => {
-    const updatedData = state.map((object) => {
-      if (object.id === objectId) {
-        const updatedNotes = object.notes.map((note) => {
-          if (note.id === noteId) {
-            return { ...note, content: e.target.value };
-          }
-          return note;
-        });
-        return { ...object, notes: updatedNotes };
-      }
-      return object;
-    });
-    setState(updatedData);
-  };
-
-  const editContent = async (containerId: string, noteId: string) => {
-    if (user) {
-      const noteRef = doc(
-        db,
-        "users",
-        user.uid,
-        "noteContainer",
-        containerId,
-        "notes",
-        noteId
-      );
-      const container = state.find((obj) => obj.id === containerId);
-      if (container) {
-        const note = container.notes.find((nt) => nt.id === noteId);
-        if (note) {
-          const newContent = {
-            content: note.content,
-          };
-          await updateDoc(noteRef, newContent);
-        }
-      }
-    }
-  };
-
-  const toggleEditModeItem = (objectId: string, noteId: string) => {
-    const updatedData = state.map((object) => {
-      if (object.id === objectId) {
-        const updatedNotes = object.notes.map((note) => {
-          if (note.id === noteId) {
-            return { ...note, isEditable: !note.isEditable };
-          }
-          return note;
-        });
-        return { ...object, notes: updatedNotes };
-      }
-      return object;
-    });
-    setState(updatedData);
-
-    editContent(objectId, noteId);
-  };
-
+  
   const uploadImage = async (e, container: any, index: number) => {
     const imageUpload = e.target.files[0];
 
@@ -744,153 +644,14 @@ function NotesDisplay() {
   return (
     <div className="w-full grow bg bg-no-repeat bg-cover bg-blue-700">
       <Gradient />
-      {fetching ? (
-        <Loader />
-      ) : (
+      {fetching ? <Loader /> : (
         <div className="flex flex-wrap gap-5 max-w-7xl mx-auto mt-10 px-2 md:px-10 items-start">
           <DragDropContext onDragEnd={onDragEnd}>
             {state.map((el, ind) => (
-              <Droppable key={ind} droppableId={`${ind}`}>
-                {(provided, snapshot) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className={`${
-                      snapshot.isDraggingOver ? "bg-blue-300" : "bg-[#F1F2F4]"
-                    } p-2 w-60 px-3 py-3 min-w-[250px] rounded-2xl duration-150 delay-75 mzx-w-[90vw] overflow-hidden`}
-                  >
-                    <div className="heading flex justify-between h-4 items-center pr-1 py-4">
-                      <div className="text-sm font-medium text-gray-800">
-                        {el.isEditable ? (
-                          <input
-                            type="text"
-                            value={el.name}
-                            onChange={(e) => handleNameChange(e, el.id)}
-                            onBlur={() => toggleEditMode(el.id)}
-                            className="input bg-[#F1F2F4] pl-[0.58rem] py-1 border-none"
-                            autoFocus
-                            placeholder="Title"
-                          />
-                        ) : (
-                          <p
-                            onClick={() => toggleEditMode(el.id)}
-                            className="pl-3"
-                          >
-                            {el.name}
-                          </p>
-                        )}
-                      </div>
-                      <span
-                        onClick={() => deleteCard(ind)}
-                        className="cursor-pointer"
-                      >
-                        <AiFillDelete />
-                      </span>
-                    </div>
-                    <div className="text-xs font-light py-1 px-3">
-                      {state[ind].notes.length} card
-                      {state[ind].notes.length > 1 && "s"}
-                    </div>
-                    {el.notes.map((item, index) => (
-                      <Draggable
-                        key={item.id}
-                        draggableId={item.id}
-                        index={index} 
-                      >
-                        {(provided, snapshot) => (
-                          <div
-                            className={`note ${
-                              snapshot.isDragging
-                                ? "bg-yellow-300 skew-y-6"
-                                : "bg-white skew-y-0"
-                            } select-none rounded-xl my-2 flex items-center px-3 py-2 overflow-auto`}
-                            onMouseEnter={() => setHover(`${item.id}`)}
-                            onMouseLeave={() => setHover("")}
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            style={{ ...provided.draggableProps.style }}
-                          >
-                            <div className="w-full flex justify-between">
-                              {item.content.substring(0, 38) ===
-                              "https://firebasestorage.googleapis.com" ? (
-                                <img src={item.content} className="h-20" />
-                              ) : (
-                                <div>
-                                  {item.isEditable ? (
-                                    <input
-                                      type="text"
-                                      value={item.content}
-                                      onChange={(e) =>
-                                        handleContentChangeItem(
-                                          e,
-                                          el.id,
-                                          item.id
-                                        )
-                                      }
-                                      onBlur={() =>
-                                        toggleEditModeItem(el.id, item.id)
-                                      }
-                                      className="bg-[white] pl-[0.58rem] py-1 border-none"
-                                      autoFocus
-                                    />
-                                  ) : (
-                                    <span className="pl-3">{item.content}</span>
-                                  )}
-                                </div>
-                              )}
-                              <div
-                                className={`buttons flex gap-2 ${
-                                  hover.includes(item.id) ? "block" : "hidden"
-                                } ${item.isEditable ? "hidden" : "block"}`}
-                              >
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    toggleEditModeItem(el.id, item.id)
-                                  }
-                                >
-                                  <BiPencil />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    deleteElement(ind, index);
-                                  }}
-                                >
-                                  <MdDeleteOutline />
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    <div className="flex gap-2 mt-4 mb-2 ml-1">
-                      <span
-                        className="cursor-pointer"
-                        onClick={() => addElement(el, ind)}
-                      >
-                        <AiOutlinePlus />
-                      </span>
-                      <label className="cursor-pointer">
-                        <input
-                          className="hidden"
-                          type="file"
-                          onChange={(e) => uploadImage(e, el, ind)}
-                        />
-                        <BsImages />
-                      </label>
-                    </div>
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
+              <NoteCard state={state} seState={setState} container={el} index={ind} />
             ))}
           </DragDropContext>
-          <button
-            className="p-2 w-60 px-3 py-3 min-w-[250px] rounded-2xl duration-200 delay-75 bg-[#F1F2F4] hover:bg-gray-300 h-16 ease-out opacity-40"
-            type="button"
+          <button className="p-2 w-60 px-3 py-3 min-w-[250px] rounded-2xl duration-200 delay-75 bg-[#F1F2F4] hover:bg-gray-300 h-16 ease-out opacity-40" type="button"
             onClick={() => {
               !user &&
                 setState([
@@ -912,7 +673,6 @@ function NotesDisplay() {
           </button>
         </div>
       )}
-      <Toaster />
     </div>
   );
 }
