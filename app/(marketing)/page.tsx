@@ -46,7 +46,7 @@ const MarketingPage = () => {
         accomplish it all with Noteflow.
       </div>
       <Button className="mt-6" size="lg" asChild>
-        <Link href="/sign-up">Get Noteflow for free</Link>
+        <Link href="/register">Get Noteflow for free</Link>
       </Button>
     </div>
   );
