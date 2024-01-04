@@ -1,7 +1,0 @@
-change css when we write a long note to expand it vertically
-
-
-improve csss alignments
-
-
-submt form on enter key press
