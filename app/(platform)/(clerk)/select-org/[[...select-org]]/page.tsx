@@ -6,8 +6,8 @@ const CreateOrganizationPage = () => {
   return (
     <OrganizationList
       hidePersonal
-      afterSelectOrganizationUrl='/organization/:slug' //? slug is the dynamic organization slug used as a slug
-      afterCreateOrganizationUrl='/organization/:slug' //? slug is the dynamic organization slug used as a slug
+      afterSelectOrganizationUrl='/organization/:id' //? id is the dynamic organization id we want to redirect to. Use :slug for redirect using organization slug
+      afterCreateOrganizationUrl='/organization/:id' //? id is the dynamic organization id we want to redirect to. Use :slug for redirect using organization slug
     />
   );
 };

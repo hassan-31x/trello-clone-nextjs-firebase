@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 import { Plus } from "lucide-react";
 
-const Navbar = () => {
+const DashbaordNavbar = () => {
   return (
     <nav className="fixed z-50 top-0 px-4 w-full h-14 border-b shadow-sm bg-white flex items-center">
       <div className="flex items-center gap-x-4">
@@ -27,9 +27,9 @@ const Navbar = () => {
       <div className="ml-auto flex items-center gap-x-2">
         <OrganizationSwitcher
           hidePersonal
-          afterCreateOrganizationUrl="/organization/:slug"
+          afterCreateOrganizationUrl="/organization/:id" //? or :slug for redirect to organization slug
           afterLeaveOrganizationUrl="/select-org"
-          afterSelectOrganizationUrl="/organization/:slug"
+          afterSelectOrganizationUrl="/organization/:id" //? or :slug for redirect to organization slug
           appearance={{
             elements: {
               rootBox: {
@@ -56,4 +56,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default DashbaordNavbar;
